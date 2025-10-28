@@ -1,102 +1,102 @@
 // TODO: Refactor this code to follow clean naming conventions
 
-class Prod {
+class Product {
   constructor(
-    public n: string,
-    public p: number,
-    public q: number,
-    public d: boolean
+    public name: string,
+    public price: number,
+    public quantity: number,
+    public hasDiscount: boolean
   ) {}
 }
 
-class Usr {
+class User {
   constructor(
     public id: number,
-    public nm: string,
-    public e: string,
-    public blocked: boolean,
-    public bal: number
+    public name: string,
+    public email: string,
+    public isBlocked: boolean,
+    public balance: number
   ) {}
 }
 
-class Ord {
+class Order {
   constructor(
-    public no: number,
-    public u: Usr,
-    public items: Prod[],
-    public st: string
+    public orderNumber: number,
+    public user: User,
+    public items: Product[],
+    public status: string
   ) {}
 }
 
-class Mgr {
-  private data: Ord[] = [];
+class Manager {
+  private data: Order[] = [];
   private flag = true;
 
-  do(x: Ord): boolean {
-    if (!this.check(x)) {
+  do(order: Order): boolean {
+    if (!this.check(order)) {
       console.log("err");
       return false;
     }
 
-    const t = this.calc(x);
+    const t = this.getOrderAmount(order);
     if (t > 0) {
-      this.proc(x, t);
+      this.processOrder(order, t);
       return true;
     }
     return false;
   }
 
-  check(o: Ord): boolean {
-    if (o.u.blocked) {
+  check(order: Order): boolean {
+    if (order.user.isBlocked) {
       return false;
     }
-    if (!this.invalid(o)) {
+    if (!this.invalid(order)) {
       return true;
     }
     return false;
   }
 
-  invalid(obj: Ord): boolean {
-    if (obj.st != "ready") {
+  invalid(order: Order): boolean {
+    if (order.status != "ready") {
       return true;
     }
-    let err = false;
-    for (let i = 0; i < obj.items.length; i++) {
-      if (obj.items[i].q <= 0) {
-        err = true;
+    let error = false;
+    for (let i = 0; i < order.items.length; i++) {
+      if (order.items[i].quantity <= 0) {
+        error = true;
       }
     }
-    return err;
+    return error;
   }
 
-  calc(o: Ord): number {
-    let amt = 0;
-    for (let i = 0; i < o.items.length; i++) {
-      const itm = o.items[i];
-      let p = itm.p * itm.q;
-      if (itm.d) {
-        p = p * 0.9;
+  getOrderAmount(order: Order): number {
+    let amount = 0;
+    for (let i = 0; i < order.items.length; i++) {
+      const item = order.items[i];
+      let itemPrice = item.price * item.quantity;
+      if (item.hasDiscount) {
+        itemPrice = itemPrice * 0.9;
       }
-      amt += p;
+      amount += itemPrice;
     }
-    return amt * 1.21;
+    return amount * 1.21;
   }
 
-  proc(o: Ord, v: number): void {
-    o.u.bal = o.u.bal - v;
-    o.st = "done";
-    this.data.push(o);
+  processOrder(order: Order, amount: number): void {
+    order.user.balance = order.user.balance - amount;
+    order.status = "done";
+    this.data.push(order);
     if (this.flag) {
-      this.util(o.u.e, o.no);
+      this.addEmailLog(order.user.email, order.orderNumber);
     }
   }
 
-  util(addr: string, n: number): void {
-    console.log("Email to " + addr + ": #" + n);
+  addEmailLog(email: string, orderNumber: number): void {
+    console.log("Email to " + email + ": #" + orderNumber);
   }
 
   run1(id: number): boolean {
-    const x = this.data.find((d) => d.no == id);
+    const x = this.data.find((d) => d.orderNumber == id);
     if (x) {
       return this.do(x);
     }
@@ -105,19 +105,19 @@ class Mgr {
 }
 
 function main01() {
-  const mgr = new Mgr();
-  const u1 = new Usr(1, "John", "j@test.com", false, 1000);
-  const p1 = new Prod("Laptop", 999, 1, true);
-  const p2 = new Prod("Mouse", 25, 2, false);
-  const ord1 = new Ord(1001, u1, [p1, p2], "ready");
+  const manager = new Manager();
+  const user1 = new User(1, "John", "j@test.com", false, 1000);
+  const product1 = new Product("Laptop", 999, 1, true);
+  const product2 = new Product("Mouse", 25, 2, false);
+  const order1 = new Order(1001, user1, [product1, product2], "ready");
 
-  const res = mgr.do(ord1);
-  console.log(res ? "OK" : "FAIL");
-  console.log("Balance: " + u1.bal);
+  const hasOrderSucceded = manager.do(order1);
+  console.log(hasOrderSucceded ? "OK" : "FAIL");
+  console.log("Balance: " + user1.balance);
 
-  mgr.run1(1001);
-  console.log("Product: " + p1.n);
-  console.log("User ID: " + u1.id);
+  manager.run1(1001);
+  console.log("Product: " + product1.name);
+  console.log("User ID: " + user1.id);
 }
 
 main01();
