@@ -78,7 +78,7 @@ class AuthService {
 }
 
 // Main function
-function mainExercise05() {
+function main05() {
   const auth = new AuthService();
 
   const result1 = auth.login("admin", "wrong");
@@ -102,4 +102,4 @@ function mainExercise05() {
   console.log("Status: " + status);
 }
 
-mainExercise05();
+main05();
